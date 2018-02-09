@@ -3,6 +3,7 @@
 #include <string.h>
 #include "main.h"
 #include "instr.h"
+#include "util.h"
 
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
@@ -54,11 +55,13 @@ int main(int argc, char** argv){
 
 	Instruction* instr = getInstructions(args->inputFileName);
 
-	Instruction* curr = instr;
+	Instruction* curr = instr->next;
 	while(curr != NULL){
 		printInstruction(stdout, curr);
 		curr = curr->next;
 	}
+
+	Register** registers = getRegisters(instr);
 
 	destroyInstructionList(instr);
 
