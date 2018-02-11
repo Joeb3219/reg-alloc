@@ -7,6 +7,7 @@
 //
 // Example usage: sim -i 1024 1 1 < block1.i
 
+	loadI	1024	=> r0
 	loadI	1032	=> r1
 	loadI	1024	=> r10
 	load	r10	=> r11

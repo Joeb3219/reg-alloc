@@ -12,10 +12,21 @@
 
 	typedef struct Register Register;
 
+	struct RegSet{
+		Register** registers;
+		int numRegisters;
+	};
+
+	typedef struct RegSet RegSet;
+
 	// Function declarations
+	void computeLiveRanges(Instruction* head, RegSet* regSet);
 	int findNumRegisters(Instruction* head);
-	Register** getRegisters(Instruction* head);
+	RegSet* getRegisters(Instruction* head);
 	Register* createRegister();
 	void destroyRegister(Register* reg);
+	RegSet* createRegSet(int numRegisters);
+	void destroyRegSet(RegSet* regSet);
+
 
 #endif

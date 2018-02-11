@@ -61,7 +61,7 @@ int main(int argc, char** argv){
 		curr = curr->next;
 	}
 
-	Register** registers = getRegisters(instr);
+	RegSet* registers = getRegisters(instr);
 
 	destroyInstructionList(instr);
 
