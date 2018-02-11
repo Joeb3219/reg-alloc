@@ -27,6 +27,7 @@
 	void destroyRegister(Register* reg);
 	RegSet* createRegSet(int numRegisters);
 	void destroyRegSet(RegSet* regSet);
+	void printRegSet(RegSet* set);
 
 
 #endif

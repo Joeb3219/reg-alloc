@@ -4,6 +4,11 @@
 #include "instr.h"
 #include "main.h"
 
+// Location declarations
+Instruction* findDefinition(Instruction* head, int reg);
+Instruction* findUsage(Instruction* end, int reg);
+int computeInstructionDepth(Instruction* a, Instruction* b);
+RegSet* reduceRegisterSet(RegSet* original);
 
 int findNumRegisters(Instruction* head){
 	int i = 0, argI = 0;
@@ -26,6 +31,10 @@ RegSet* getRegisters(Instruction* head){
 	RegSet* set = createRegSet(numRegs);
 
 	computeLiveRanges(head, set);
+
+	set = reduceRegisterSet(set);
+
+	printRegSet(set);
 
 	return set;
 }
@@ -88,14 +97,6 @@ void computeLiveRanges(Instruction* head, RegSet* set){
 		set->registers[i]->liverange = computeInstructionDepth(def, usage);
 
 		if(usage == NULL) continue;
-
-		if(DEBUG){
-			printf("Register %d (liverange: %d)\n", set->registers[i]->name, set->registers[i]->liverange);
-			printf("First defined: ");	
-			printInstruction(stdout, def);
-			printf("Last used: ");
-			printInstruction(stdout, usage);
-		}
 	}
 
 }
@@ -112,6 +113,29 @@ void destroyRegister(Register* reg){
 	free(reg);
 }
 
+// This function produces a register set that removes any unused registers.
+RegSet* reduceRegisterSet(RegSet* original){
+	int numUsed = 0, i;
+
+	for(i = 0; i < original->numRegisters; i ++){
+		if(original->registers[i]->firstAppears == NULL && original->registers[i]->lastAppears == NULL && i != 0) continue;
+		numUsed ++;
+	}
+
+//	if(numUsed == original->numRegisters) return original;
+
+	RegSet* newSet = createRegSet(numUsed);
+
+	numUsed = 0;
+	for(i = 0; i < original->numRegisters; i ++){
+		if(original->registers[i]->firstAppears == NULL && original->registers[i]->lastAppears == NULL && i != 0) continue;
+		newSet->registers[numUsed ++] = original->registers[i];
+	}
+
+	free(original->registers);
+	free(original);
+	return newSet;
+}
 
 RegSet* createRegSet(int numRegisters){
 	int i;
@@ -135,4 +159,25 @@ void destroyRegSet(RegSet* regSet){
 
 	free(regSet->registers);
 	free(regSet);
+}
+
+void printRegSet(RegSet* set){
+	int i;
+
+	printf("Register set: %d registers\n", set->numRegisters);
+	for(i = 0; i < set->numRegisters; i ++){
+		printf("Register %d (liverange: %d)\n", set->registers[i]->name, set->registers[i]->liverange);
+
+		if(set->registers[i]->firstAppears == NULL) printf("\tReg never defined\n");
+		else{
+			printf("\tFirst defined: ");	
+			printInstruction(stdout, set->registers[i]->firstAppears);
+		}
+		if(set->registers[i]->lastAppears == NULL) printf("\tReg never used\n");
+		else{
+			printf("\tLast used: ");	
+			printInstruction(stdout, set->registers[i]->lastAppears);
+		}
+	}
+
 }
