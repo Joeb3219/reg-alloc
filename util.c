@@ -34,7 +34,7 @@ RegSet* getRegisters(Instruction* head){
 
 	set = reduceRegisterSet(set);
 
-	printRegSet(set);
+	if(DEBUG) printRegSet(set);
 
 	return set;
 }

@@ -7,9 +7,12 @@
 
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
-
+void process(Arguments* args, Instruction* head, RegSet* registers);
 
 // Function definitions
+void process(Arguments* args, Instruction* head, RegSet* registers){
+
+}
 
 // Will create a struct full of all of the data passed in from the command line.
 Arguments* parseArguments(int argc, char** argv){
@@ -56,12 +59,18 @@ int main(int argc, char** argv){
 	Instruction* instr = getInstructions(args->inputFileName);
 
 	Instruction* curr = instr->next;
-	while(curr != NULL){
-		printInstruction(stdout, curr);
-		curr = curr->next;
-	}
 
 	RegSet* registers = getRegisters(instr);
+
+	process(args, curr, registers);
+
+	// Output
+	FILE* output = fopen("samples/out.i", "w");
+	while(curr != NULL){
+		printInstruction(output, curr);
+		curr = curr->next;
+	}
+	fclose(output);
 
 	destroyInstructionList(instr);
 

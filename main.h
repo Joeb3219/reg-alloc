@@ -1,7 +1,7 @@
 #ifndef _MAIN_H_
 
 	#define _MAIN_H_
-	#define DEBUG 1
+	#define DEBUG 0
 
 	enum AllocatorType{
 		TOP_DOWN_CLASS, TOP_DOWN_BOOK, BOTTOM_UP, CUSTOM
