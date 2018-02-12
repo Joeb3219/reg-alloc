@@ -10,6 +10,7 @@ Instruction* createInstruction(){
 	instr->numArgs = 0;
 	instr->args = malloc(sizeof(InstrArg*) * 4);
 	instr->next = instr->last = NULL;
+	instr->registersLive = 0;
 	return instr;
 }
 
@@ -125,8 +126,9 @@ void printInstruction(FILE* file, Instruction* instr){
 
 		if(arg->isReg) fprintf(file, "\tr%d", arg->value);
 		else fprintf(file, "\t%d", arg->value);
-	}
 
+	}
+	
 	fprintf(file, "\n");
 }
 

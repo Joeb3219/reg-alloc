@@ -26,6 +26,22 @@ void sortRegSet_liveRanges(RegSet* set){
 	}
 }
 
+// Assumes that occurences are already set for each register and that unused ones are removed.
+// Currently utilizes just an insertion sort.
+void sortRegSet_occurences(RegSet* set){
+	int i, j;
+	Register *a, *b;
+	for(i = 0; i < set->numRegisters; i ++){
+		a = set->registers[i];
+		j = i - 1;
+		while(j >= 0 && (set->registers[j]->occurences > a->occurences || set->registers[j]->name == 0) ){
+			set->registers[j + 1] = set->registers[j];
+			j --;
+		}
+		set->registers[j + 1] = a;
+	}
+}
+
 int findNumRegisters(Instruction* head){
 	int i = 0, argI = 0;
 	while(head != NULL){
@@ -50,9 +66,7 @@ RegSet* getRegisters(Instruction* head){
 
 	set = reduceRegisterSet(set);
 
-	sortRegSet_liveRanges(set);
-
-	if(DEBUG) printRegSet(set);
+	computeRegistersLiveInInstructions(set);
 
 	return set;
 }
@@ -94,6 +108,34 @@ int computeInstructionDepth(Instruction* a, Instruction* b){
 	return depth;
 }
 
+void computeRegistersLiveInInstructions(RegSet* set){
+	int i = 0;
+	Instruction* instr;
+
+	for(i = 0; i < set->numRegisters; i ++){
+		if(set->registers[i]->name == 0) continue;
+		instr = set->registers[i]->firstAppears;
+		while(instr != set->registers[i]->lastAppears){
+			instr->registersLive ++;
+			instr = instr->next;
+		}
+	}
+}
+
+
+void computeOccurences(Register* reg){
+	if(reg->firstAppears == NULL) return;
+	Instruction* start = reg->firstAppears;
+	int i = 0;
+	while(start != reg->lastAppears){
+		for(i = 0; i < start->numArgs; i ++){
+			if(start->args[i]->isReg){
+				if(start->args[i]->value == reg->name) reg->occurences ++;
+			}
+		}
+		start = start->next;
+	}
+}
 
 void computeLiveRanges(Instruction* head, RegSet* set){
 	int i = 0, depth;
@@ -113,7 +155,7 @@ void computeLiveRanges(Instruction* head, RegSet* set){
 		}
 
 		set->registers[i]->liverange = computeInstructionDepth(def, usage);
-
+		computeOccurences(set->registers[i]);
 		if(usage == NULL) continue;
 	}
 
@@ -123,7 +165,7 @@ Register* createRegister(){
 	Register* reg = malloc(sizeof(Register));
 	reg->name = 0;
 	reg->firstAppears = reg->lastAppears = NULL;
-	reg->liverange = 0;
+	reg->liverange = reg->occurences = 0;
 	return reg;
 }
 
@@ -184,7 +226,7 @@ void printRegSet(RegSet* set){
 
 	printf("Register set: %d registers\n", set->numRegisters);
 	for(i = 0; i < set->numRegisters; i ++){
-		printf("Register %d (liverange: %d)\n", set->registers[i]->name, set->registers[i]->liverange);
+		printf("Register %d (liverange: %d, occurences: %d)\n", set->registers[i]->name, set->registers[i]->liverange, set->registers[i]->occurences);
 
 		if(set->registers[i]->firstAppears == NULL) printf("\tReg never defined\n");
 		else{

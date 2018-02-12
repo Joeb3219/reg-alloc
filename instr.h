@@ -29,6 +29,7 @@
 		InstrType type;
 		int numArgs;
 		InstrArg** args;
+		int registersLive;
 		struct Instruction* next;
 		struct Instruction* last;
 	};

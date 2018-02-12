@@ -5,42 +5,106 @@
 #include "instr.h"
 #include "util.h"
 
+#define TOTAL_REGS (args->numRegs)
+#define AVAIL_REGS (TOTAL_REGS - 3)
+#define IS_REG_PHYSICAL(O) (((AVAIL_REGS - O) >= 0) ? 1 : 0)
+#define GET_OFFSET(O) ((O - AVAIL_REGS + 1) * 4)
+#define DEST(I) ((I = 0) ? (I + AVAIL_REGS) : ( I + AVAIL_REGS + 1))
+
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
-Instruction* process(Arguments* args, Instruction* head, RegSet* registers);
-Instruction* process_bottomUp(Arguments* args, Instruction* head, RegSet* registers);
-Instruction* process_topDownClass(Arguments* args, Instruction* head, RegSet* registers);
-Instruction* process_topDownBook(Arguments* args, Instruction* head, RegSet* registers);
-Instruction* process_custom(Arguments* args, Instruction* head, RegSet* registers);
+void process(Arguments* args, Instruction* head, RegSet* registers);
+void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers);
+void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers);
+void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers);
+void process_custom(Arguments* args, Instruction* head, RegSet* registers);
+int getRegisterPositionFromEnd(RegSet* set, int name);
 
 // Function definitions
-Instruction* process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
-	return head;
+int getRegisterPositionFromEnd(RegSet* set, int name){
+	int i = 0;
+	for(i = set->numRegisters - 1; i >= 0; i --){
+		if(set->registers[i]->name == name) return i;
+	}
+
+	return -1;
 }
 
-Instruction* process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
-	return head;
-}
-
-Instruction* process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
-	if(DEBUG) printf("Processing: Top Down Processing\n\n\n\n\n\n\n");
-
-	return head;
-}
-
-Instruction* process_custom(Arguments* args, Instruction* head, RegSet* registers){
-	return head;
-}
-
-
-Instruction* process(Arguments* args, Instruction* head, RegSet* registers){
-	if(args->allocationType == TOP_DOWN_BOOK) return process_topDownBook(args, head, registers);
-	else if(args->allocationType == TOP_DOWN_CLASS) return process_topDownClass(args, head, registers);
-	else if(args->allocationType == BOTTOM_UP) return process_bottomUp(args, head, registers);
-	else if(args->allocationType == CUSTOM) return process_custom(args, head, registers);
+void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
 	
-	printf("Invalid allocator type\n"); 
-	return NULL;
+}
+
+void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
+	
+}
+
+Instruction* generateLoadAI(int offset, int destination){
+	Instruction* instr = createInstruction();
+
+	instr->type = LOADAI;
+	instr->numArgs = 3;
+	instr->args[0] = createInstrArg();
+	instr->args[1] = createInstrArg();
+	instr->args[2] = createInstrArg();
+
+	instr->args[0]->isInput = instr->args[1]->isInput = 1;
+	instr->args[2]->isInput = 0;
+
+	instr->args[0]->isReg = instr->args[2]->isReg = 1;
+	instr->args[1]->isReg = 0;
+
+	instr->args[0]->value = 0;
+	instr->args[1]->value = offset;
+	instr->args[2]->value = destination;
+
+	return instr;
+}
+
+void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
+	int i, offset, destination = 0;
+	InstrArg *arg;
+	Instruction* new, *tmp;
+	sortRegSet_occurences(registers);
+
+	if(DEBUG) printf("Processing: Top Down Processing\n\n\n\n\n\n\n");
+	if(DEBUG) printRegSet(registers);
+
+	while(head != NULL){
+		for(i = 0; i < head->numArgs; i ++){
+			arg = head->args[i];
+			if(!arg->isReg) continue;
+			offset = getRegisterPositionFromEnd(registers, arg->value);
+			// If the offset is within acceptable bounds, then we can go ahead and quit here.
+			if(IS_REG_PHYSICAL(offset)) continue;
+				new = generateLoadAI(GET_OFFSET(offset), DEST(destination));
+				new->next = head;
+				head->last->next = new;
+				destination = 1;
+			if(arg->isInput){
+
+				// If we've gotten here, then we need to load the register in from memory.
+			}else{
+
+			}		
+		}
+
+		destination = 0;
+		head = head->next;
+	}	
+}
+
+void process_custom(Arguments* args, Instruction* head, RegSet* registers){
+	
+}
+
+
+void process(Arguments* args, Instruction* head, RegSet* registers){
+	if(registers->numRegisters <= AVAIL_REGS) printf("Program used %d registers, which fit within %d physical registers.\n", registers->numRegisters, AVAIL_REGS);
+	else if(args->allocationType == TOP_DOWN_BOOK) process_topDownBook(args, head, registers);
+	else if(args->allocationType == TOP_DOWN_CLASS) process_topDownClass(args, head, registers);
+	else if(args->allocationType == BOTTOM_UP) process_bottomUp(args, head, registers);
+	else if(args->allocationType == CUSTOM) process_custom(args, head, registers);
+	else printf("Invalid allocator type\n"); 
 }
 
 // Will create a struct full of all of the data passed in from the command line.
@@ -89,8 +153,8 @@ int main(int argc, char** argv){
 
 	RegSet* registers = getRegisters(instr);
 
-	Instruction* result = process(args, instr->next, registers);
-	Instruction* curr = result;
+	process(args, instr, registers);
+	Instruction* curr = instr->next;
 
 	// Output
 	FILE* output = fopen("samples/out.i", "w");
@@ -100,7 +164,6 @@ int main(int argc, char** argv){
 	}
 	fclose(output);
 
-	if(result != instr) destroyInstructionList(result);
 	destroyInstructionList(instr);
 
 	return 0;

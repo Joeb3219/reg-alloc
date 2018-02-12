@@ -1,3 +1,5 @@
 alloc
 *.o
 samples/out.i
+out1
+sim
