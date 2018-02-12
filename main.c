@@ -22,9 +22,10 @@ int getRegisterPositionFromEnd(RegSet* set, int name);
 
 // Function definitions
 int getRegisterPositionFromEnd(RegSet* set, int name){
-	int i = 0;
+	int i = 0, j = 0;
 	for(i = set->numRegisters - 1; i >= 0; i --){
-		if(set->registers[i]->name == name) return i;
+		if(set->registers[i]->name == name) return j;
+		j ++;
 	}
 
 	return -1;
@@ -63,7 +64,7 @@ Instruction* generateLoadAI(int offset, int destination){
 void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
 	int i, offset, destination = 0;
 	InstrArg *arg;
-	Instruction* new, *tmp;
+	Instruction *new;
 	sortRegSet_occurences(registers);
 
 	if(DEBUG) printf("Processing: Top Down Processing\n\n\n\n\n\n\n");
@@ -76,12 +77,15 @@ void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
 			offset = getRegisterPositionFromEnd(registers, arg->value);
 			// If the offset is within acceptable bounds, then we can go ahead and quit here.
 			if(IS_REG_PHYSICAL(offset)) continue;
-				new = generateLoadAI(GET_OFFSET(offset), DEST(destination));
-				new->next = head;
-				head->last->next = new;
-				destination = 1;
 			if(arg->isInput){
+				new = generateLoadAI(GET_OFFSET(offset), DEST(destination));
+				head->last->next = new;
+				new->last = head->last;
+				head->last = new;
+				new->next = head;
+				destination = 1;
 
+				arg->value = DEST(destination);
 				// If we've gotten here, then we need to load the register in from memory.
 			}else{
 
