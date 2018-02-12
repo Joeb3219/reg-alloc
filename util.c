@@ -10,6 +10,22 @@ Instruction* findUsage(Instruction* end, int reg);
 int computeInstructionDepth(Instruction* a, Instruction* b);
 RegSet* reduceRegisterSet(RegSet* original);
 
+// Assumes that liveranges are already set for each register and that unused ones are removed.
+// Currently utilizes just an insertion sort.
+void sortRegSet_liveRanges(RegSet* set){
+	int i, j;
+	Register *a, *b;
+	for(i = 0; i < set->numRegisters; i ++){
+		a = set->registers[i];
+		j = i - 1;
+		while(j >= 0 && set->registers[j]->liverange > a->liverange){
+			set->registers[j + 1] = set->registers[j];
+			j --;
+		}
+		set->registers[j + 1] = a;
+	}
+}
+
 int findNumRegisters(Instruction* head){
 	int i = 0, argI = 0;
 	while(head != NULL){
@@ -33,6 +49,8 @@ RegSet* getRegisters(Instruction* head){
 	computeLiveRanges(head, set);
 
 	set = reduceRegisterSet(set);
+
+	sortRegSet_liveRanges(set);
 
 	if(DEBUG) printRegSet(set);
 

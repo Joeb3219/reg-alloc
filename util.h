@@ -28,6 +28,7 @@
 	RegSet* createRegSet(int numRegisters);
 	void destroyRegSet(RegSet* regSet);
 	void printRegSet(RegSet* set);
+	void sortRegSet_liveRanges(RegSet* set);
 
 
 #endif

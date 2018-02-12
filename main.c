@@ -7,11 +7,40 @@
 
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
-void process(Arguments* args, Instruction* head, RegSet* registers);
+Instruction* process(Arguments* args, Instruction* head, RegSet* registers);
+Instruction* process_bottomUp(Arguments* args, Instruction* head, RegSet* registers);
+Instruction* process_topDownClass(Arguments* args, Instruction* head, RegSet* registers);
+Instruction* process_topDownBook(Arguments* args, Instruction* head, RegSet* registers);
+Instruction* process_custom(Arguments* args, Instruction* head, RegSet* registers);
 
 // Function definitions
-void process(Arguments* args, Instruction* head, RegSet* registers){
+Instruction* process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
+	return head;
+}
 
+Instruction* process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
+	return head;
+}
+
+Instruction* process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
+	if(DEBUG) printf("Processing: Top Down Processing\n\n\n\n\n\n\n");
+
+	return head;
+}
+
+Instruction* process_custom(Arguments* args, Instruction* head, RegSet* registers){
+	return head;
+}
+
+
+Instruction* process(Arguments* args, Instruction* head, RegSet* registers){
+	if(args->allocationType == TOP_DOWN_BOOK) return process_topDownBook(args, head, registers);
+	else if(args->allocationType == TOP_DOWN_CLASS) return process_topDownClass(args, head, registers);
+	else if(args->allocationType == BOTTOM_UP) return process_bottomUp(args, head, registers);
+	else if(args->allocationType == CUSTOM) return process_custom(args, head, registers);
+	
+	printf("Invalid allocator type\n"); 
+	return NULL;
 }
 
 // Will create a struct full of all of the data passed in from the command line.
@@ -58,11 +87,10 @@ int main(int argc, char** argv){
 
 	Instruction* instr = getInstructions(args->inputFileName);
 
-	Instruction* curr = instr->next;
-
 	RegSet* registers = getRegisters(instr);
 
-	process(args, curr, registers);
+	Instruction* result = process(args, instr->next, registers);
+	Instruction* curr = result;
 
 	// Output
 	FILE* output = fopen("samples/out.i", "w");
@@ -72,6 +100,7 @@ int main(int argc, char** argv){
 	}
 	fclose(output);
 
+	if(result != instr) destroyInstructionList(result);
 	destroyInstructionList(instr);
 
 	return 0;
