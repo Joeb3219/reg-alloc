@@ -122,11 +122,16 @@ void printInstruction(FILE* file, Instruction* instr){
 	int printedYields = 0;
 	for(i = 0; i < instr->numArgs; i ++){
 		arg = instr->args[i];
-		if(!arg->isInput && !printedYields) fprintf(file, "\t=>");
+		if(!arg->isInput && !printedYields){
+			fprintf(file, "\t=>");
+			printedYields = 1;
+		}
 
 		if(arg->isReg) fprintf(file, "\tr%d", arg->value);
 		else fprintf(file, "\t%d", arg->value);
-
+		if(i != instr->numArgs - 1){
+			if(instr->args[i]->isInput == instr->args[i + 1]->isInput) fprintf(file, ",");
+		}
 	}
 	
 	fprintf(file, "\n");

@@ -9,7 +9,7 @@
 #define AVAIL_REGS (TOTAL_REGS - 3)
 #define IS_REG_PHYSICAL(O) (((AVAIL_REGS - O) >= 0) ? 1 : 0)
 #define GET_OFFSET(O) ((O - AVAIL_REGS + 1) * 4)
-#define DEST(I) ((I = 0) ? (I + AVAIL_REGS) : ( I + AVAIL_REGS + 1))
+#define DEST(I) ((I == 0) ? (I + AVAIL_REGS) : ( I + AVAIL_REGS + 1))
 
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
@@ -61,6 +61,28 @@ Instruction* generateLoadAI(int offset, int destination){
 	return instr;
 }
 
+Instruction* generateStoreAI(int offset, int source){
+	Instruction* instr = createInstruction();
+
+	instr->type = STOREAI;
+	instr->numArgs = 3;
+	instr->args[0] = createInstrArg();
+	instr->args[1] = createInstrArg();
+	instr->args[2] = createInstrArg();
+
+	instr->args[0]->isInput = 1;
+	instr->args[2]->isInput = instr->args[1]->isInput = 0;
+
+	instr->args[0]->isReg = instr->args[1]->isReg = 1;
+	instr->args[2]->isReg = 0;
+
+	instr->args[0]->value = source;
+	instr->args[1]->value = 0;
+	instr->args[2]->value = offset;
+
+	return instr;
+}
+
 void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
 	int i, offset, destination = 0;
 	InstrArg *arg;
@@ -78,6 +100,7 @@ void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
 			// If the offset is within acceptable bounds, then we can go ahead and quit here.
 			if(IS_REG_PHYSICAL(offset)) continue;
 			if(arg->isInput){
+				// If we've gotten here, then we need to load the register in from memory.
 				new = generateLoadAI(GET_OFFSET(offset), DEST(destination));
 				head->last->next = new;
 				new->last = head->last;
@@ -86,9 +109,14 @@ void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers){
 				destination = 1;
 
 				arg->value = DEST(destination);
-				// If we've gotten here, then we need to load the register in from memory.
 			}else{
+				new = generateStoreAI(GET_OFFSET(offset), DEST(0));
+				head->last->next = new;
+				new->last = head->last;
+				head->last = new;
+				new->next = head;
 
+				arg->value = DEST(0);
 			}		
 		}
 
