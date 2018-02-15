@@ -2,6 +2,7 @@
 
 	#define _MAIN_H_
 	#define DEBUG 1
+	#define MAX_REGISTERS 512
 
 	enum AllocatorType{
 		TOP_DOWN_CLASS, TOP_DOWN_BOOK, BOTTOM_UP, CUSTOM

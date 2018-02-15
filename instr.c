@@ -151,6 +151,8 @@ char* typeToStr(InstrType type){
 		case MULT: return "mult";
 		case DIV: return "div";
 		case ADD: return "add";
+		case LSHIFT: return "lshift";
+		case RSHIFT: return "rshift";
 		case SUB: return "sub";
 		case MULTI: return "multI";
 		case DIVI: return "divI";
@@ -171,6 +173,8 @@ InstrType strToType(char* str){
 	if(strcmp("loadI", str) == 0) return LOADI;
 	if(strcmp("load", str) == 0) return LOAD;
 	if(strcmp("loadAI", str) == 0) return LOADAI;
+	if(strcmp("lshift", str) == 0) return LSHIFT;
+	if(strcmp("rshift", str) == 0) return RSHIFT;
 	if(strcmp("mult", str) == 0) return MULT;
 	if(strcmp("div", str) == 0) return DIV;
 	if(strcmp("add", str) == 0) return ADD;
