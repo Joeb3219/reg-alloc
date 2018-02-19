@@ -10,6 +10,50 @@ Instruction* findUsage(Instruction* end, int reg);
 int computeInstructionDepth(Instruction* a, Instruction* b);
 RegSet* reduceRegisterSet(RegSet* original);
 
+int classPop(RegClass* class){
+	int val = class->stack[class->stackTop];
+	class->stackTop --;
+	return val;
+}
+
+void classPush(RegClass* class, int value){
+	printf("PUSHING REGISTER r%d\n", class->physicalName[value]);
+	class->stack[++class->stackTop] = value;
+}
+
+void freeRegClass(RegClass* class){
+	free(class->name);
+	free(class->next);
+	free(class->free);
+	free(class->stack);
+	free(class->physicalName);
+	free(class);
+}
+
+RegClass* createRegClass(int size){
+	RegClass* class = malloc(sizeof(RegClass));
+	class->size = size;
+	class->name = malloc(sizeof(int) * size);
+	class->next = malloc(sizeof(int) * size);
+	class->free = malloc(sizeof(int) * size);
+	class->stack = malloc(sizeof(int) * size);
+	class->physicalName = malloc(sizeof(int) * size);
+	class->everAllocated = malloc(sizeof(char) * size);
+	class->stackTop = -1;
+
+	int i;
+	for(i = 0; i < size; i ++){
+		class->name[i] = -1;
+		class->next[i] = 0;
+		class->free[i] = 1;
+		class->physicalName[i] = i + 1;
+		class->everAllocated[i] = 0;
+		classPush(class, i);
+	}
+
+	return class;
+}
+
 // Assumes that liveranges are already set for each register and that unused ones are removed.
 // Currently utilizes just an insertion sort.
 void sortRegSet_liveRanges(RegSet* set){

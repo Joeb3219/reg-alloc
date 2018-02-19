@@ -20,7 +20,24 @@
 
 	typedef struct RegSet RegSet;
 
+	struct RegClass{
+		int size;
+		int* name;
+		int* next;
+		int* free;
+		int* stack;
+		int* physicalName;
+		char* everAllocated;
+		int stackTop;
+	};
+
+	typedef struct RegClass RegClass;
+
 	// Function declarations
+	int classPop(RegClass* class);
+	void classPush(RegClass* class, int value);
+	void freeRegClass(RegClass* class);
+	RegClass* createRegClass(int size);
 	void computeLiveRanges(Instruction* head, RegSet* regSet);
 	void computeOccurences(Register* reg);
 	int findNumRegisters(Instruction* head);

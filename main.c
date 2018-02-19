@@ -9,7 +9,9 @@
 #define AVAIL_REGS (TOTAL_REGS - 3)
 #define IS_REG_PHYSICAL(O) (((AVAIL_REGS - O) >= 0) ? 1 : 0)
 #define GET_OFFSET(O) (0 - ((O - TOTAL_REGS + 1) * 4))
+#define GET_BOTTOM_UP_OFFSET(O) ((0 - O) * 4)
 #define DEST(I) ((I == 0) ? (AVAIL_REGS + 1) : ( AVAIL_REGS + 2))
+#define INSTR_OCCURS_DEATH 999999999
 
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
@@ -18,10 +20,179 @@ void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers);
 void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers);
 void process_topDownBook(Arguments* args, Instruction* head, RegSet* registers);
 void process_custom(Arguments* args, Instruction* head, RegSet* registers);
+int bottomUp_allocate(Arguments* args, Instruction* head, RegClass* class, int vr);
+int bottomUp_ensure(Arguments* args, Instruction* head, RegClass* class, int vr);
+void bottomUp_free(Arguments* args, Instruction* head, RegClass* class, int i);
+Instruction* generateLoadAI(int offset, int destination);
+Instruction* generateStoreAI(int offset, int source);
+Register* getRegWithValue(RegSet* registers, int value);
+int getNextOccurenceDepth(Instruction* a, int regVal);
+
+int getNextOccurenceDepth(Instruction* a, int regVal){
+	int depth = 1, i;
+	a = a->next;
+	while(a != NULL){
+		for(i = 0; i < a->numArgs; i ++){
+			if(!a->args[i]->isReg) continue;
+			if(a->args[i]->value == regVal) return depth;
+		}
+		depth ++;
+
+		a = a->next;
+	}
+
+	return INSTR_OCCURS_DEATH;
+}
+
+Register* getRegWithValue(RegSet* registers, int value){
+	int i = 0;
+	for(i = 0; i < registers->numRegisters; i ++){
+		if(registers->registers[i]->name == value) return registers->registers[i];
+	}
+
+	return NULL;
+}
+
+void bottomUp_free(Arguments* args, Instruction* head, RegClass* class, int i){
+	class->name[i] = -1;
+	class->next[i] = -1;
+	class->free[i] = 1;
+	classPush(class, i);
+}
+
+int bottomUp_allocate(Arguments* args, Instruction* head, RegClass* class, int vr){
+	printf("Attempting to allocate register r%d, and we currently have %d registers free\n", vr, class->stackTop + 1);
+	int i;
+	int j, maxJ = 0;
+	Instruction* new;
+	if(class->stackTop >= 0) i = classPop(class);
+	else{
+		for(j = 0; j < class->size; j ++){
+			if(class->next[j] > class->next[maxJ] && class->next[j] != -1) maxJ = j;
+		}
+		printf("Found %d [%d, %d] for vr %d, w/ next depth %d to destroy\n", maxJ, class->name[maxJ], class->physicalName[maxJ], vr, class->next[maxJ]);
+		i = maxJ;
+		printf("So we're gonna dump to %d\n", GET_BOTTOM_UP_OFFSET(class->name[i]));
+		new = generateStoreAI(GET_BOTTOM_UP_OFFSET(class->name[i]), class->physicalName[maxJ]);
+		head->last->next = new;
+		new->last = head->last;
+		head->last = new;
+		new->next = head;
+	}
+
+	class->name[i] = vr;
+	class->next[i] = -1;
+	class->free[i] = 0;
+	class->everAllocated[i] = 1;
+	return i;
+}
+
+int bottomUp_ensure(Arguments* args, Instruction* head, RegClass* class, int vr){
+	int i = 0;
+	Instruction* new;
+	for(i = 0; i < class->size; i ++){
+		if(class->name[i] == vr) return i;
+	}
+
+	i = bottomUp_allocate(args, head, class, vr);
+
+	printf("%d\n", class->physicalName[i]);
+	if(class->everAllocated[i]){
+//		printf("Generating a loadAI: %d %d!\n", GET_OFFSET(vr), class->name);
+		new = generateLoadAI(GET_BOTTOM_UP_OFFSET(vr), class->physicalName[i]);
+		head->last->next = new;
+		new->last = head->last;
+		head->last = new;
+		new->next = head;
+	}
+
+	class->everAllocated[i] = 1;
+
+	return i;
+}
 
 // Function definitions
 void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
-	
+	RegClass* class = createRegClass(args->numRegs);
+	int i;
+	int rx = -1, ry = -1, rz = -1;
+	int numInputs = 0, numOutputs = 0;
+	int vri1, vri2, vri3;
+	int isOutputValueImportant = 0;
+
+	while(head != NULL){
+		isOutputValueImportant = (head->type == STORE);
+		numInputs = numOutputs = 0;
+		for(i = 0; i < head->numArgs; i ++){
+			if(!head->args[i]->isReg) continue;
+			if(head->args[i]->isInput){
+				if(head->args[i]->value == 0) continue;
+				numInputs ++;
+				if(numInputs == 1) rx = bottomUp_ensure(args, head, class, head->args[i]->value);
+				if(numInputs == 2) ry = bottomUp_ensure(args, head, class, head->args[i]->value);
+			}
+		}
+
+		vri1 = vri2 = vri3 = -1;
+
+		if(numInputs == 2){
+			vri1 = head->args[0]->value;
+			vri2 = head->args[1]->value;
+		}else if(numInputs == 1){
+			if(head->args[0]->isReg && head->args[0]->value != 0) vri1 = head->args[0]->value;
+			else vri1 = head->args[1]->value;
+		}
+
+		for(i = 0; i < head->numArgs; i ++){
+			if(!head->args[i]->isReg) continue;
+			if(!head->args[i]->isInput){
+				if(head->args[i]->value == 0) continue;
+				numOutputs ++;
+				if(numOutputs == 1){
+					if(!isOutputValueImportant) rz = bottomUp_allocate(args, head, class, head->args[i]->value);
+					else rz = bottomUp_ensure(args, head, class, head->args[i]->value);
+					vri3 = head->args[i]->value;
+				}
+			}
+		}
+
+
+		if(vri1 != -1 && getNextOccurenceDepth(head, vri1) == INSTR_OCCURS_DEATH) bottomUp_free(args, head, class, rx);
+		if(vri2 != -1 && getNextOccurenceDepth(head, vri1) == INSTR_OCCURS_DEATH) bottomUp_free(args, head, class, ry);
+
+		numInputs = numOutputs = 0;
+
+		for(i = 0; i < head->numArgs; i ++){
+			if(!head->args[i]->isReg) continue;
+			if(head->args[i]->value == 0) continue;
+			if(head->args[i]->isInput){
+				numInputs ++;
+				if(numInputs == 1){
+					head->args[i]->value = class->physicalName[rx];
+					class->next[rx] = getNextOccurenceDepth(head, vri1);
+				}
+				if(numInputs == 2){
+					head->args[i]->value = class->physicalName[ry];
+					class->next[ry] = getNextOccurenceDepth(head, vri2);
+				}
+			}else{
+				numOutputs ++;
+				if(numOutputs == 1){
+					head->args[i]->value = class->physicalName[rz];
+					class->next[rz] = getNextOccurenceDepth(head, vri3);
+				}
+			}
+		}
+
+		for(i = 0; i < class->size; i ++){
+			if(class->next[i] != -1) class->next[i] --;
+		}
+
+		head = head->next;
+
+	}
+
+	freeRegClass(class);
 }
 
 void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
