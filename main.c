@@ -28,6 +28,76 @@ Instruction* generateStoreAI(int offset, int source);
 Register* getRegWithValue(RegSet* registers, int value);
 int getNextOccurenceDepth(Instruction* a, int regVal);
 
+void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
+	int i, offset, destination = 0;
+	InstrArg *arg;
+	Instruction *new;
+	sortRegSet_liveRanges(registers);
+	int registerReplacements[MAX_REGISTERS];
+	for(i = 0; i < MAX_REGISTERS; i ++) registerReplacements[i] = -1;
+	// First, we rewrite our register numbers.
+	for(i = registers->numRegisters - 1; i >= 0; i --){
+		offset = (registers->numRegisters - 1 - i);
+		if(offset > AVAIL_REGS) offset += 2;
+		registerReplacements[registers->registers[i]->name] = offset;
+		if(DEBUG) printf(">> %d => %d\n", registers->registers[i]->name, offset);
+	}
+	registerReplacements[0] = 0;
+
+
+	if(DEBUG) printf("Processing: Top Down Processing\n\n\n\n\n\n\n");
+	//if(DEBUG) printRegSet(registers);
+
+	while(head != NULL){
+		for(i = 0; i < head->numArgs; i ++){
+			arg = head->args[i];
+			if(!arg->isReg) continue;
+			offset = registerReplacements[arg->value];
+			// If the offset is within acceptable bounds, then we can go ahead and quit here.
+			if(IS_REG_PHYSICAL(offset)){
+				arg->value = offset;
+				continue;
+			}
+
+			if(head->type == STORE) destination = 1;
+			if(head->type == STORE && !arg->isInput){
+				new = generateLoadAI(GET_OFFSET(offset), DEST(0));
+				head->last->next = new;
+				new->last = head->last;
+				head->last = new;
+				new->next = head;
+				arg->value = DEST(0);
+				continue;
+			}
+
+			if(arg->isInput){
+				// If we've gotten here, then we need to load the register in from memory.
+				new = generateLoadAI(GET_OFFSET(offset), DEST(destination));
+				head->last->next = new;
+				new->last = head->last;
+				head->last = new;
+				new->next = head;
+				arg->value = DEST(destination);
+				destination = 1;
+			}else{
+				new = generateStoreAI(GET_OFFSET(offset), DEST(0));
+				new->next = head->next;
+				new->last = head;
+				head->next = new;
+				new->next->last = new;
+
+				arg->value = DEST(0);
+
+				head = head->next;
+				break;
+			}		
+		}
+
+		destination = 0;
+		head = head->next;
+	}	
+}
+
 int getNextOccurenceDepth(Instruction* a, int regVal){
 	int depth = 1, i;
 	a = a->next;
@@ -190,10 +260,6 @@ void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
 	}
 
 	freeRegClass(class);
-}
-
-void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
-	
 }
 
 Instruction* generateLoadAI(int offset, int destination){

@@ -1,0 +1,9 @@
+add
+load
+loadI
+lshift
+mult
+output
+rshift
+store
+sub

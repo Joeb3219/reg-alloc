@@ -53,6 +53,13 @@ RegClass* createRegClass(int size){
 	return class;
 }
 
+int rank_liveRanges(Register* a, Register* b){
+	if(a->name == 0) return 1;
+	if(a->occurences > b->occurences) return 1;
+	if(b->occurences > a->occurences) return 0;
+	return a->liverange >= b->liverange;
+}
+
 // Assumes that liveranges are already set for each register and that unused ones are removed.
 // Currently utilizes just an insertion sort.
 void sortRegSet_liveRanges(RegSet* set){
@@ -61,7 +68,7 @@ void sortRegSet_liveRanges(RegSet* set){
 	for(i = 0; i < set->numRegisters; i ++){
 		a = set->registers[i];
 		j = i - 1;
-		while(j >= 0 && set->registers[j]->liverange > a->liverange){
+		while(j >= 0 && (rank_liveRanges(set->registers[j], a)) ){
 			set->registers[j + 1] = set->registers[j];
 			j --;
 		}
@@ -245,8 +252,10 @@ RegSet* createRegSet(int numRegisters){
 	RegSet* set = malloc(sizeof(RegSet));
 
 	set->numRegisters = numRegisters;
+	printf("Allocating %d registers\n", numRegisters);
 	set->registers = malloc(sizeof(Register*) * numRegisters);
 	for(i = 0; i < numRegisters; i ++){
+		printf("Reg %d out of %d\n", i, numRegisters);
 		set->registers[i] = createRegister();
 		set->registers[i]->name = i;
 	}
