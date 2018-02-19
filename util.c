@@ -17,7 +17,6 @@ int classPop(RegClass* class){
 }
 
 void classPush(RegClass* class, int value){
-	printf("PUSHING REGISTER r%d\n", class->physicalName[value]);
 	class->stack[++class->stackTop] = value;
 }
 

@@ -61,7 +61,7 @@ void bottomUp_free(Arguments* args, Instruction* head, RegClass* class, int i){
 }
 
 int bottomUp_allocate(Arguments* args, Instruction* head, RegClass* class, int vr){
-	printf("Attempting to allocate register r%d, and we currently have %d registers free\n", vr, class->stackTop + 1);
+	if(DEBUG) printf("Attempting to allocate register r%d, and we currently have %d registers free\n", vr, class->stackTop + 1);
 	int i;
 	int j, maxJ = 0;
 	Instruction* new;
@@ -70,9 +70,8 @@ int bottomUp_allocate(Arguments* args, Instruction* head, RegClass* class, int v
 		for(j = 0; j < class->size; j ++){
 			if(class->next[j] > class->next[maxJ] && class->next[j] != -1) maxJ = j;
 		}
-		printf("Found %d [%d, %d] for vr %d, w/ next depth %d to destroy\n", maxJ, class->name[maxJ], class->physicalName[maxJ], vr, class->next[maxJ]);
+		if(DEBUG) printf("Found %d [%d, %d] for vr %d, w/ next depth %d to destroy\n", maxJ, class->name[maxJ], class->physicalName[maxJ], vr, class->next[maxJ]);
 		i = maxJ;
-		printf("So we're gonna dump to %d\n", GET_BOTTOM_UP_OFFSET(class->name[i]));
 		new = generateStoreAI(GET_BOTTOM_UP_OFFSET(class->name[i]), class->physicalName[maxJ]);
 		head->last->next = new;
 		new->last = head->last;
@@ -96,9 +95,7 @@ int bottomUp_ensure(Arguments* args, Instruction* head, RegClass* class, int vr)
 
 	i = bottomUp_allocate(args, head, class, vr);
 
-	printf("%d\n", class->physicalName[i]);
-	if(class->everAllocated[i]){
-//		printf("Generating a loadAI: %d %d!\n", GET_OFFSET(vr), class->name);
+	if(1 || class->everAllocated[i]){
 		new = generateLoadAI(GET_BOTTOM_UP_OFFSET(vr), class->physicalName[i]);
 		head->last->next = new;
 		new->last = head->last;
@@ -121,7 +118,7 @@ void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
 	int isOutputValueImportant = 0;
 
 	while(head != NULL){
-		isOutputValueImportant = (head->type == STORE);
+		isOutputValueImportant = (head->type == STORE || 0);
 		numInputs = numOutputs = 0;
 		for(i = 0; i < head->numArgs; i ++){
 			if(!head->args[i]->isReg) continue;
@@ -158,7 +155,7 @@ void process_bottomUp(Arguments* args, Instruction* head, RegSet* registers){
 
 
 		if(vri1 != -1 && getNextOccurenceDepth(head, vri1) == INSTR_OCCURS_DEATH) bottomUp_free(args, head, class, rx);
-		if(vri2 != -1 && getNextOccurenceDepth(head, vri1) == INSTR_OCCURS_DEATH) bottomUp_free(args, head, class, ry);
+		if(vri2 != -1 && getNextOccurenceDepth(head, vri2) == INSTR_OCCURS_DEATH) bottomUp_free(args, head, class, ry);
 
 		numInputs = numOutputs = 0;
 
