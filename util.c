@@ -252,10 +252,10 @@ RegSet* createRegSet(int numRegisters){
 	RegSet* set = malloc(sizeof(RegSet));
 
 	set->numRegisters = numRegisters;
-	printf("Allocating %d registers\n", numRegisters);
+	if(DEBUG) printf("Allocating %d registers\n", numRegisters);
 	set->registers = malloc(sizeof(Register*) * numRegisters);
 	for(i = 0; i < numRegisters; i ++){
-		printf("Reg %d out of %d\n", i, numRegisters);
+		if(DEBUG) printf("Reg %d out of %d\n", i, numRegisters);
 		set->registers[i] = createRegister();
 		set->registers[i]->name = i;
 	}

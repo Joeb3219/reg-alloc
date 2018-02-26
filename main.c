@@ -8,10 +8,11 @@
 #define TOTAL_REGS (args->numRegs)
 #define AVAIL_REGS (TOTAL_REGS - 3)
 #define IS_REG_PHYSICAL(O) (((AVAIL_REGS - O) >= 0) ? 1 : 0)
-#define GET_OFFSET(O) (0 - ((O - TOTAL_REGS + 1) * 4))
-#define GET_BOTTOM_UP_OFFSET(O) ((0 - O) * 4)
+#define GET_OFFSET(O) (getRegisterMemoryStore(O))
+#define GET_BOTTOM_UP_OFFSET(O) (getRegisterMemoryStore(O))
 #define DEST(I) ((I == 0) ? (AVAIL_REGS + 1) : ( AVAIL_REGS + 2))
 #define INSTR_OCCURS_DEATH 999999999
+#define MAX_VIRTUAL_REGISTERS 512
 
 // Function declarations
 Arguments* parseArguments(int argc, char** argv);
@@ -27,6 +28,27 @@ Instruction* generateLoadAI(int offset, int destination);
 Instruction* generateStoreAI(int offset, int source);
 Register* getRegWithValue(RegSet* registers, int value);
 int getNextOccurenceDepth(Instruction* a, int regVal);
+int getRegisterMemoryStore(int rv);
+
+// Function implementations
+
+// There two variables are used to keep track of where we have been storing variables in the program memory.
+int *memoryStoreAddresses = NULL;	// We will end up storing 0 in any rv that has yet to be stored. Later, these will be updated to their real values
+int lastMemoryStore = -4;
+int getRegisterMemoryStore(int rv){
+	int i = 0;
+	if(memoryStoreAddresses == NULL){
+		memoryStoreAddresses = malloc(sizeof(int) * MAX_VIRTUAL_REGISTERS);
+		for(i = 0; i < MAX_REGISTERS; i ++) memoryStoreAddresses[i] = 0;
+	}
+	
+	if(memoryStoreAddresses[rv] == 0){
+		memoryStoreAddresses[rv] = lastMemoryStore;
+		lastMemoryStore -= 4;
+	}
+
+	return memoryStoreAddresses[rv];
+}
 
 void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
 	int i, offset, destination = 0;

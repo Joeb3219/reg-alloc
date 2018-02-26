@@ -1,7 +1,7 @@
 #ifndef _MAIN_H_
 
 	#define _MAIN_H_
-	#define DEBUG 1
+	#define DEBUG 0
 	#define MAX_REGISTERS 512
 
 	enum AllocatorType{
