@@ -134,7 +134,7 @@ void printInstruction(FILE* file, Instruction* instr){
 		}
 	}
 	
-	fprintf(file, "\n");
+	fprintf(file, "\t\t// Liverange: %d\n", instr->registersLive);
 }
 
 char* typeToStr(InstrType type){

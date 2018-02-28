@@ -11,6 +11,7 @@
 #define GET_OFFSET(O) (getRegisterMemoryStore(O))
 #define GET_BOTTOM_UP_OFFSET(O) (getRegisterMemoryStore(O))
 #define DEST(I) ((I == 0) ? (AVAIL_REGS + 1) : ( AVAIL_REGS + 2))
+#define TOP_DOWN_CLASS_DEST(I) ((I == 0) ? (TOTAL_REGS - 1) : (TOTAL_REGS))
 #define INSTR_OCCURS_DEATH 999999999
 #define MAX_VIRTUAL_REGISTERS 512
 
@@ -29,8 +30,24 @@ Instruction* generateStoreAI(int offset, int source);
 Register* getRegWithValue(RegSet* registers, int value);
 int getNextOccurenceDepth(Instruction* a, int regVal);
 int getRegisterMemoryStore(int rv);
+int getRegisterStore(Arguments* args, int rv);
+void unsetRegister(int rv);
+int isLastUsage(Instruction* head, int vr);
 
 // Function implementations
+
+int isLastUsage(Instruction* head, int vr){
+	int i = 0;
+	if(head == NULL) return 1;
+	head = head->next;
+	while(head != NULL){
+		for(i = 0; i < head->numArgs; i ++){
+			if(head->args[i]->isReg && head->args[i]->value == vr) return 0;
+		}
+		head = head->next;
+	}
+	return 1;
+}
 
 // There two variables are used to keep track of where we have been storing variables in the program memory.
 int *memoryStoreAddresses = NULL;	// We will end up storing 0 in any rv that has yet to be stored. Later, these will be updated to their real values
@@ -50,74 +67,176 @@ int getRegisterMemoryStore(int rv){
 	return memoryStoreAddresses[rv];
 }
 
-void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
-	int i, offset, destination = 0;
-	InstrArg *arg;
-	Instruction *new;
-	sortRegSet_liveRanges(registers);
-	int registerReplacements[MAX_REGISTERS];
-	for(i = 0; i < MAX_REGISTERS; i ++) registerReplacements[i] = -1;
-	// First, we rewrite our register numbers.
-	for(i = registers->numRegisters - 1; i >= 0; i --){
-		offset = (registers->numRegisters - 1 - i);
-		if(offset > AVAIL_REGS) offset += 2;
-		registerReplacements[registers->registers[i]->name] = offset;
-		if(DEBUG) printf(">> %d => %d\n", registers->registers[i]->name, offset);
+int *registerStore = NULL;	// We will end up storing 0 in any rv that has yet to be stored. Later, these will be updated to their real values
+int *availableRegisterNumbers = NULL;
+void unsetRegister(int rv){
+	int i = registerStore[rv];
+	availableRegisterNumbers[i] = 1;
+	registerStore[rv] = -1;
+}
+
+int getRegisterStore(Arguments* args, int rv){
+	int i = 0;
+	if(registerStore == NULL){
+		registerStore = malloc(sizeof(int) * MAX_VIRTUAL_REGISTERS);
+		for(i = 0; i < MAX_REGISTERS; i ++) registerStore[i] = -1;
+		availableRegisterNumbers = malloc(sizeof(int) * MAX_VIRTUAL_REGISTERS);
+		for(i = 0; i < MAX_REGISTERS; i ++) availableRegisterNumbers[i] = 1;
+		availableRegisterNumbers[0] = 0;
+		availableRegisterNumbers[TOP_DOWN_CLASS_DEST(0)] = availableRegisterNumbers[TOP_DOWN_CLASS_DEST(1)] = 0;
 	}
-	registerReplacements[0] = 0;
+	registerStore[0] = 0;
+	
+	if(registerStore[rv] == -1){
+		for(i = 0; i < MAX_VIRTUAL_REGISTERS; i ++){
+			if(availableRegisterNumbers[i] == 1){
+				registerStore[rv] = i;
+				availableRegisterNumbers[i] = 0;
+				break;
+			}
+		}
+	}
 
 
-	if(DEBUG) printf("Processing: Top Down Processing\n\n\n\n\n\n\n");
-	//if(DEBUG) printRegSet(registers);
+	return registerStore[rv];
+}
 
+int findMaxLive(Instruction* head){
+	int i = 0;
 	while(head != NULL){
-		for(i = 0; i < head->numArgs; i ++){
-			arg = head->args[i];
-			if(!arg->isReg) continue;
-			offset = registerReplacements[arg->value];
-			// If the offset is within acceptable bounds, then we can go ahead and quit here.
-			if(IS_REG_PHYSICAL(offset)){
-				arg->value = offset;
+		if(head->registersLive > i) i = head->registersLive;
+		head = head->next;
+	}
+	return i;
+}
+
+int findLiveRangeFromSet(RegSet* registers, int vr){
+	int i = 0;
+
+	for(i = 0; i < registers->numRegisters; i ++){
+		if(registers->registers[i]->name == vr) return registers->registers[i]->liverange;
+	}
+
+	return -1;
+}
+
+void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers){
+	int i = 0, currentRegSetIndex = 0, max = -1, argRange, regVal;
+	RegSet *lineRegSet = createRegSet(registers->numRegisters);
+	int maxLive = 0;
+	InstrArg* arg;
+	Instruction* current;
+	Register* reg;
+
+	while(1){
+		maxLive = findMaxLive(head);
+		printf("Maxlive is %d\n", maxLive);
+		if(maxLive <= (TOTAL_REGS - 2)) break;
+
+		current = head;
+		while(current != NULL){
+			max = -1;
+			if(current->registersLive <= (TOTAL_REGS - 2)){
+				current = current->next;
 				continue;
 			}
 
-			if(head->type == STORE) destination = 1;
-			if(head->type == STORE && !arg->isInput){
-				new = generateLoadAI(GET_OFFSET(offset), DEST(0));
-				head->last->next = new;
-				new->last = head->last;
-				head->last = new;
-				new->next = head;
-				arg->value = DEST(0);
+			printInstruction(stdout, current);
+
+			for(i = 0; i < current->numArgs; i ++){
+				arg = current->args[i];
+				if(!arg->isReg || arg->value == 0) continue;
+				argRange = findLiveRangeFromSet(registers, arg->value);
+				if(argRange > max) max = argRange;
+			}
+
+			for(i = 0; i < current->numArgs; i ++){
+				arg = current->args[i];
+				if(!arg->isReg || arg->value == 0) continue;
+				argRange = findLiveRangeFromSet(registers, arg->value);
+				if(argRange == max && max != -1){
+					lineRegSet->registers[currentRegSetIndex ++] = getRegWithValue(registers, arg->value);
+					removeRegFromRegSet(registers, lineRegSet->registers[currentRegSetIndex - 1]);
+					clearRegisterLiveRangesAndRecompute(head, registers);
+					break;
+				}
+			}
+
+			current = current->next;
+		}	
+	}
+
+
+	lineRegSet->numRegisters = currentRegSetIndex;
+	int destination = 0;
+
+
+	//printf("REG SET\n");
+	//if(DEBUG) printRegSet(registers);
+	printf("LINe REG SET\n");
+	if(DEBUG) printRegSet(lineRegSet);
+
+	sortRegSet_occurences(registers);
+
+	current = head;
+	while(current != NULL){
+		destination = 0;
+
+		Instruction* new;
+		for(i = 0; i < current->numArgs; i ++){
+			arg = current->args[i];
+			if(!arg->isReg || arg->value == 0) continue;
+			
+			// Do a check if it's a store operation or not.
+			// If not, we can unset the vr's association with the given register.
+
+			reg = getRegWithValue(lineRegSet, arg->value);
+			//printf("%p\n", reg);
+			if(reg == NULL){
+				reg = getRegWithValue(registers, arg->value);
+				regVal = getRegisterStore(args, arg->value);
+
+				if(isLastUsage(current, reg->name)){
+					unsetRegister(arg->value);
+				}
+
+				arg->value = regVal;
 				continue;
 			}
 
-			if(arg->isInput){
+			if(current->type == STORE && !arg->isInput){
+				new = generateLoadAI(GET_OFFSET(arg->value), TOP_DOWN_CLASS_DEST(0));
+				current->last->next = new;
+				new->last = current->last;
+				current->last = new;
+				new->next = current;
+				arg->value = TOP_DOWN_CLASS_DEST(0);
+				continue;
+			}else if(arg->isInput){
 				// If we've gotten here, then we need to load the register in from memory.
-				new = generateLoadAI(GET_OFFSET(offset), DEST(destination));
-				head->last->next = new;
-				new->last = head->last;
-				head->last = new;
-				new->next = head;
-				arg->value = DEST(destination);
+				new = generateLoadAI(GET_OFFSET(arg->value), TOP_DOWN_CLASS_DEST(destination));
+				current->last->next = new;
+				new->last = current->last;
+				current->last = new;
+				new->next = current;
+				arg->value = TOP_DOWN_CLASS_DEST(destination);
 				destination = 1;
 			}else{
-				new = generateStoreAI(GET_OFFSET(offset), DEST(0));
-				new->next = head->next;
-				new->last = head;
-				head->next = new;
+				new = generateStoreAI(GET_OFFSET(arg->value), TOP_DOWN_CLASS_DEST(0));
+				new->next = current->next;
+				new->last = current;
+				current->next = new;
 				new->next->last = new;
 
-				arg->value = DEST(0);
+				arg->value = TOP_DOWN_CLASS_DEST(0);
 
-				head = head->next;
+				current = current->next;
 				break;
-			}		
+			}
 		}
 
-		destination = 0;
-		head = head->next;
-	}	
+		current = current->next;
+	}
 }
 
 int getNextOccurenceDepth(Instruction* a, int regVal){

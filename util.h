@@ -46,9 +46,11 @@
 	void destroyRegister(Register* reg);
 	RegSet* createRegSet(int numRegisters);
 	void destroyRegSet(RegSet* regSet);
+	void removeRegFromRegSet(RegSet* regSet, Register* reg);
 	void printRegSet(RegSet* set);
 	void sortRegSet_liveRanges(RegSet* set);
 	void sortRegSet_occurences(RegSet* set);
+	void clearRegisterLiveRangesAndRecompute(Instruction* head, RegSet* set);
 	void computeRegistersLiveInInstructions(RegSet* set);
 
 

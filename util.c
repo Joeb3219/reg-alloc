@@ -158,6 +158,15 @@ int computeInstructionDepth(Instruction* a, Instruction* b){
 	return depth;
 }
 
+void clearRegisterLiveRangesAndRecompute(Instruction* head, RegSet* set){
+	while(head != NULL){
+		head->registersLive = 0;
+		head = head->next;
+	}
+
+	computeRegistersLiveInInstructions(set);
+}
+
 void computeRegistersLiveInInstructions(RegSet* set){
 	int i = 0;
 	Instruction* instr;
@@ -187,6 +196,18 @@ void computeOccurences(Register* reg){
 	}
 }
 
+// Instead of shrinking the array, we will simply do a swap with the last element and then set this one to NULL.
+void removeRegFromRegSet(RegSet* regSet, Register* reg){
+	int i = 0;
+	for(i = 0; i < regSet->numRegisters; i ++){
+		if(regSet->registers[i] == reg){
+			regSet->registers[i] = regSet->registers[regSet->numRegisters - 1];
+			regSet->registers[regSet->numRegisters - 1] = NULL;
+		}
+	}
+	regSet->numRegisters --;
+}
+
 void computeLiveRanges(Instruction* head, RegSet* set){
 	int i = 0, depth;
 
@@ -200,6 +221,7 @@ void computeLiveRanges(Instruction* head, RegSet* set){
 		set->registers[i]->firstAppears = def = findDefinition(head, set->registers[i]->name);
 		set->registers[i]->lastAppears = usage = findUsage(end, set->registers[i]->name);
 
+		if(set->registers[i]->name == 0) continue;
 		if(def == NULL){
 			if(DEBUG) printf("REGISTER %d NEVER DEFINED!\n", set->registers[i]->name);
 		}
