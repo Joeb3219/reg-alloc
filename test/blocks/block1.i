@@ -15,9 +15,9 @@
 	loadI	1028	=> r13
 	load	r13	=> r14
 
-	store	r11=> r1
-	add	r1,r12 => r15
-	add	r11,r14 =>r16
+	store	r11	=> r1
+	add	r1, r12	=> r15
+	add	r11, r14	=> r16
 	store	r16	=> r15
 
 	add	r15, r12	=> r17

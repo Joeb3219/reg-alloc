@@ -1,0 +1,109 @@
+Allocator, File Name, Number Registers, Cycles, Allocator Time, Correct
+Bottom Up, blocks/block1.i, 5, 97, 0.004000, 1
+Bottom Up, blocks/block1.i, 10, 96, 0.004000, 1
+Bottom Up, blocks/block1.i, 20, 96, 0.004000, 1
+Top Down Class, blocks/block1.i, 5, 219, 0.014000, 1
+Top Down Class, blocks/block1.i, 10, 96, 0.007000, 1
+Top Down Class, blocks/block1.i, 20, 96, 0.006000, 1
+Top Down EAC, blocks/block1.i, 5, 525, 0.005000, 1
+Top Down EAC, blocks/block1.i, 10, 505, 0.005000, 1
+Top Down EAC, blocks/block1.i, 20, 395, 0.004000, 1
+Bottom Up, blocks/block2.i, 5, 112, 0.005000, 1
+Bottom Up, blocks/block2.i, 10, 83, 0.004000, 1
+Bottom Up, blocks/block2.i, 20, 81, 0.004000, 1
+Top Down Class, blocks/block2.i, 5, 335, 0.008000, 1
+Top Down Class, blocks/block2.i, 10, 258, 0.007000, 1
+Top Down Class, blocks/block2.i, 20, 81, 0.006000, 1
+Top Down EAC, blocks/block2.i, 5, 397, 0.004000, 1
+Top Down EAC, blocks/block2.i, 10, 372, 0.005000, 1
+Top Down EAC, blocks/block2.i, 20, 291, 0.005000, 1
+Bottom Up, blocks/block3.i, 5, 67, 0.004000, 1
+Bottom Up, blocks/block3.i, 10, 47, 0.005000, 1
+Bottom Up, blocks/block3.i, 20, 47, 0.004000, 1
+Top Down Class, blocks/block3.i, 5, 80, 0.006000, 1
+Top Down Class, blocks/block3.i, 10, 47, 0.006000, 1
+Top Down Class, blocks/block3.i, 20, 47, 0.007000, 1
+Top Down EAC, blocks/block3.i, 5, 180, 0.006000, 1
+Top Down EAC, blocks/block3.i, 10, 128, 0.007000, 1
+Top Down EAC, blocks/block3.i, 20, 57, 0.004000, 1
+Bottom Up, blocks/block4.i, 5, 57, 0.005000, 1
+Bottom Up, blocks/block4.i, 10, 36, 0.005000, 1
+Bottom Up, blocks/block4.i, 20, 36, 0.004000, 1
+Top Down Class, blocks/block4.i, 5, 76, 0.006000, 1
+Top Down Class, blocks/block4.i, 10, 36, 0.007000, 1
+Top Down Class, blocks/block4.i, 20, 36, 0.006000, 1
+Top Down EAC, blocks/block4.i, 5, 175, 0.004000, 1
+Top Down EAC, blocks/block4.i, 10, 123, 0.009000, 1
+Top Down EAC, blocks/block4.i, 20, 46, 0.007000, 1
+Bottom Up, blocks/block5.i, 5, 171, 0.005000, 1
+Bottom Up, blocks/block5.i, 10, 75, 0.006000, 1
+Bottom Up, blocks/block5.i, 20, 75, 0.004000, 1
+Top Down Class, blocks/block5.i, 5, 262, 0.007000, 1
+Top Down Class, blocks/block5.i, 10, 75, 0.006000, 1
+Top Down Class, blocks/block5.i, 20, 75, 0.007000, 1
+Top Down EAC, blocks/block5.i, 5, 468, 0.007000, 1
+Top Down EAC, blocks/block5.i, 10, 427, 0.006000, 1
+Top Down EAC, blocks/block5.i, 20, 342, 0.005000, 1
+Bottom Up, blocks/block6.i, 5, 54, 0.004000, 1
+Bottom Up, blocks/block6.i, 10, 54, 0.004000, 1
+Bottom Up, blocks/block6.i, 20, 54, 0.005000, 1
+Top Down Class, blocks/block6.i, 5, 119, 0.007000, 1
+Top Down Class, blocks/block6.i, 10, 54, 0.006000, 1
+Top Down Class, blocks/block6.i, 20, 54, 0.006000, 1
+Top Down EAC, blocks/block6.i, 5, 324, 0.005000, 1
+Top Down EAC, blocks/block6.i, 10, 293, 0.007000, 1
+Top Down EAC, blocks/block6.i, 20, 176, 0.005000, 1
+Bottom Up, blocks/report1.i, 5, 192, 0.005000, 1
+Bottom Up, blocks/report1.i, 10, 107, 0.005000, 1
+Bottom Up, blocks/report1.i, 20, 65, 0.006000, 1
+Top Down Class, blocks/report1.i, 5, 321, 0.007000, 0
+Top Down Class, blocks/report1.i, 10, 186, 0.006000, 1
+Top Down Class, blocks/report1.i, 20, 65, 0.007000, 1
+Top Down EAC, blocks/report1.i, 5, 505, 0.008000, 1
+Top Down EAC, blocks/report1.i, 10, 465, 0.005000, 1
+Top Down EAC, blocks/report1.i, 20, 353, 0.005000, 1
+Bottom Up, blocks/report2.i, 5, 62, 0.006000, 1
+Bottom Up, blocks/report2.i, 10, 62, 0.005000, 1
+Bottom Up, blocks/report2.i, 20, 62, 0.007000, 1
+Top Down Class, blocks/report2.i, 5, 146, 0.006000, 1
+Top Down Class, blocks/report2.i, 10, 62, 0.005000, 1
+Top Down Class, blocks/report2.i, 20, 62, 0.007000, 1
+Top Down EAC, blocks/report2.i, 5, 390, 0.005000, 1
+Top Down EAC, blocks/report2.i, 10, 333, 0.006000, 1
+Top Down EAC, blocks/report2.i, 20, 228, 0.005000, 1
+Bottom Up, blocks/report3.i, 5, 105, 0.007000, 1
+Bottom Up, blocks/report3.i, 10, 70, 0.004000, 1
+Bottom Up, blocks/report3.i, 20, 52, 0.005000, 1
+Top Down Class, blocks/report3.i, 5, 241, 0.006000, 0
+Top Down Class, blocks/report3.i, 10, 121, 0.007000, 1
+Top Down Class, blocks/report3.i, 20, 52, 0.006000, 1
+Top Down EAC, blocks/report3.i, 5, 329, 0.005000, 1
+Top Down EAC, blocks/report3.i, 10, 278, 0.004000, 1
+Top Down EAC, blocks/report3.i, 20, 151, 0.004000, 1
+Bottom Up, blocks/report5.i, 5, 150, 0.005000, 1
+Bottom Up, blocks/report5.i, 10, 104, 0.005000, 1
+Bottom Up, blocks/report5.i, 20, 50, 0.005000, 1
+Top Down Class, blocks/report5.i, 5, 343, 0.012000, 1
+Top Down Class, blocks/report5.i, 10, 259, 0.011000, 1
+Top Down Class, blocks/report5.i, 20, 156, 0.007000, 1
+Top Down EAC, blocks/report5.i, 5, 366, 0.005000, 1
+Top Down EAC, blocks/report5.i, 10, 318, 0.005000, 1
+Top Down EAC, blocks/report5.i, 20, 188, 0.005000, 1
+Bottom Up, blocks/report4.i, 5, 51, 0.004000, 1
+Bottom Up, blocks/report4.i, 10, 46, 0.004000, 1
+Bottom Up, blocks/report4.i, 20, 46, 0.005000, 1
+Top Down Class, blocks/report4.i, 5, 65, 0.007000, 1
+Top Down Class, blocks/report4.i, 10, 46, 0.006000, 1
+Top Down Class, blocks/report4.i, 20, 46, 0.008000, 1
+Top Down EAC, blocks/report4.i, 5, 267, 0.004000, 1
+Top Down EAC, blocks/report4.i, 10, 223, 0.005000, 1
+Top Down EAC, blocks/report4.i, 20, 163, 0.005000, 1
+Bottom Up, blocks/report6.i, 5, 58, 0.005000, 1
+Bottom Up, blocks/report6.i, 10, 52, 0.005000, 1
+Bottom Up, blocks/report6.i, 20, 52, 0.005000, 1
+Top Down Class, blocks/report6.i, 5, 163, 0.007000, 1
+Top Down Class, blocks/report6.i, 10, 52, 0.007000, 1
+Top Down Class, blocks/report6.i, 20, 52, 0.006000, 1
+Top Down EAC, blocks/report6.i, 5, 357, 0.005000, 1
+Top Down EAC, blocks/report6.i, 10, 322, 0.005000, 1
+Top Down EAC, blocks/report6.i, 20, 257, 0.005000, 1

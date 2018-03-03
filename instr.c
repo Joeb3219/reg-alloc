@@ -8,7 +8,7 @@ Instruction* createInstruction(){
 	Instruction* instr = malloc(sizeof(Instruction));
 	instr->type = ERROR;
 	instr->numArgs = 0;
-	instr->args = malloc(sizeof(InstrArg*) * 4);
+	instr->args = malloc(sizeof(InstrArg*) * 6);
 	instr->next = instr->last = NULL;
 	instr->registersLive = 0;
 	return instr;
@@ -69,12 +69,47 @@ void findNextToken(char** str, char* buffer){
 	str[0] = rStr;
 }
 
+char* substrrep(char* str, char search, char* replacement){
+	int finalSize = 0;
+	int replacementLength = strlen(replacement);
+	int i;
+	for(i = 0; i < strlen(str); i ++){
+		if(str[i] == search) finalSize += replacementLength;
+		else finalSize += 1;
+	}
+
+	i = 0;
+	int j = 0, k = 0;
+
+	char* newString = malloc(sizeof(char) * (finalSize + 1));
+
+	for(i = 0; i < strlen(str); i ++){
+		if(str[i] == search){
+			for(k = 0; k < replacementLength; k ++){
+				newString[j ++] = replacement[k];
+			}
+		}else{
+			newString[j ++] = str[i];
+		}
+	}
+
+	newString[j] = '\0';
+	return newString;
+}
+
 void decodeInstruction(char* line, Instruction* instr){
+	if(line[0] == '/') return;
 	int i = 0, j = 0;
 	char* instructionType;
 	// At most, we can have an argument that takes up the whole line.
 	char buffer[strlen(line) + 1];
 	InstrArg* arg;
+
+	char *replaceCommas = substrrep(line, ',', "\t,\t");
+	char *replaceEquals = substrrep(replaceCommas, '=', "\t=");
+//	free(replaceCommas);
+	line = substrrep(replaceEquals, '>', "> ");
+//	free(replaceEquals);
 
 	findNextToken(&line, buffer);
 	instr->type = strToType(buffer);
@@ -82,6 +117,8 @@ void decodeInstruction(char* line, Instruction* instr){
 	int processingInputs = 1;
 	while(line[0] != '\0'){
 		findNextToken(&line, buffer);
+		if(buffer[0] == ',') continue;
+		if(buffer[0] == '/') return;
 
 		// Determine if we are now on the right side of the => sign, which means that all other arguments are outputs.
 		if(strcmp(buffer, "=>") == 0){
@@ -97,7 +134,8 @@ void decodeInstruction(char* line, Instruction* instr){
 
 		if(arg->isReg) arg->value = atoi(&buffer[1]);
 		else arg->value = atoi(buffer);
-	
+		if(instr->numArgs >= 3) printf("Attempting to store arg w/ value %d => pos %d\n", arg->value, (instr->numArgs + 1));
+
 		instr->args[instr->numArgs ++] = arg;
 	}
 

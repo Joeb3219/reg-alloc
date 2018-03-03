@@ -130,7 +130,7 @@ void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers)
 
 	while(1){
 		maxLive = findMaxLive(head);
-		printf("Maxlive is %d\n", maxLive);
+		if(DEBUG) printf("Maxlive is %d\n", maxLive);
 		if(maxLive <= (TOTAL_REGS - 2)) break;
 
 		current = head;
@@ -140,8 +140,6 @@ void process_topDownClass(Arguments* args, Instruction* head, RegSet* registers)
 				current = current->next;
 				continue;
 			}
-
-			printInstruction(stdout, current);
 
 			for(i = 0; i < current->numArgs; i ++){
 				arg = current->args[i];
@@ -577,11 +575,11 @@ int main(int argc, char** argv){
 
 	RegSet* registers = getRegisters(instr);
 
-	process(args, instr, registers);
+//	process(args, instr, registers);
 	Instruction* curr = instr->next;
 
 	// Output
-	FILE* output = fopen("samples/out.i", "w");
+	FILE* output = fopen("/home/joeb3219/code/cs415/register/samples/out.i", "w");
 	while(curr != NULL){
 		printInstruction(output, curr);
 		curr = curr->next;
