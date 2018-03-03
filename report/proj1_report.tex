@@ -2,6 +2,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{titling}
+\usepackage{float}
+\usepackage{csvsimple}
+
+\usepackage{graphicx}
+\graphicspath{ {/} }
 
 \newcommand{\oneline}{\fillwithlines{0.25in}}
 \newcommand\tab[1][1cm]{\hspace*{#1}}
@@ -47,6 +52,22 @@
 \title{Project 1 Report}
 \author{Joseph A. Boyle}
 
+\begin{filecontents*}{baseline_cycles_2.csv}
+file, cycles, maxlive, registers
+block1.i, 96, 5, 50
+block2.i, 81, 12, 44
+block3.i, 47, 6, 19
+block4.i, 36, 6, 19
+block5.i, 75, 5, 49
+block6.i, 54, 4, 28
+report1.i, 65, 14, 57
+report2.i, 62, 5, 37
+report3.i, 52, 13, 27
+report4.i, 46, 5, 32
+report5.i, 50, 19, 41
+report6.i, 52, 5, 43
+\end{filecontents*}
+
 \begin{document}
 
 \maketitle
@@ -71,6 +92,28 @@ In this report, we explore different types of local register allocators and thei
 		
 	\section{Results}
 		Implementation wise, the hardest to implement was the Top-Down allocator used in class. This was largely due to not including MAXLIVE calculations in the code from the beginning, and having to restructure the way instructions are interpreted. Testing of all of the files was done via a series of C and bash scripts. One bash script was used to automate the register-allocated code (plus calculate the time to do the allocation), while another was used to handle moving result files around. These two scripts were run through a C program that verified the results of the various file allocators (with differing register counts) with that of their original file, and generated CSVs that could be used to create charts, tables, etc.
+		
+		All of our tests were performed locally and on the ilab machine, \textit{cpp.cs.rutgers.edu}, using the Linux program \textit{time} and recording the \textbf{real} time measurement. 
+		
+		\begin{figure}[H]
+			\centering
+			\begin{tabular}{c|c|c|c}%
+				 \bfseries Block Name & \bfseries Number Cycles & \bfseries MAXLIVE & \bfseries Number of Registers
+				\csvreader[head to column names]{baseline_cycles_2.csv}{}% use head of csv as column names
+				{\\\hline \file & \cycles & \maxlive & \registers}
+			\end{tabular}
+			\caption{The number of cycles, registers, and MAXLIVE for each of the blocks used in testing with an unbounded number of virtual registers.}
+		\end{figure}
 		\subsection{Bottom Up}
+			\begin{figure}[H]
+				\centering
+				\includegraphics[scale=0.43]{b_cycles.png}
+				\caption{In order, the number of cycles for the bottom-up allocator for 5, 10, and 20 registers for each of block1, block2, \dots, report 6. i.e: column 4 is 5 registers for block 2.}
+			\end{figure}
+	
+			Observing the number of cycles required as the number of registers increase is unsurprising at first glance -- less registers are required to be spilled as $k$ increases. Since Bottom-Up allocators require no Feasible set $F$, all $k$ physical registers are able to be used throughout the allocated program. In blocks where MAXLIVE is $< k$, then, we find that the performance of the allocator is equivalent to the performance of the block without allocation, in terms of cycles. The upside of using the allocator, then, is the reduction in the number of registers: in \textit{block1}, for example, we can do with $k = 6$ registers and achieve the same number of cycles as the program written using $k = 50$ registers. 
+			
+			This is a major upside when writing a compiler, so long as we assume that the values aren't intertwined too much. If users of the language are conscious of this and use variables 
+			
 
 \end{document}

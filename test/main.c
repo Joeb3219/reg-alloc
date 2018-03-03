@@ -181,7 +181,7 @@ int main(int argc, char** argv){
 	for(k = 0; k < NUM_TEST_FILES; k ++){
 
 			for(i = 0; i < NUM_TESTING_SYMBOLS; i ++){
-//				if(testingSymbols[i] != 'b') continue;
+				if(testingSymbols[i] != 'b') continue;
 
 	for(j = 0; j < NUM_TEST_REGS; j ++){
 				Results* results = getResults(files[k], testingSymbols[i], numTestRegisters[j]);

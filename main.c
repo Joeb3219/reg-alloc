@@ -575,7 +575,7 @@ int main(int argc, char** argv){
 
 	RegSet* registers = getRegisters(instr);
 
-//	process(args, instr, registers);
+	process(args, instr, registers);
 	Instruction* curr = instr->next;
 
 	// Output
