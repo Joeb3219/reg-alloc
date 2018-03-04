@@ -8,6 +8,9 @@
 \usepackage{graphicx}
 \graphicspath{ {/} }
 
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.5em}
+
 \newcommand{\oneline}{\fillwithlines{0.25in}}
 \newcommand\tab[1][1cm]{\hspace*{#1}}
 
@@ -52,20 +55,30 @@
 \title{Project 1 Report}
 \author{Joseph A. Boyle}
 
+\begin{filecontents*}{b_times.csv}
+file, fiveregs, tenregs, twentyregs
+report1.i, 0.007, 0.006, 0.008
+report2.i, 0.007, 0.008, 0.006
+report3.i, 0.01, 0.007, 0.005
+report5.i, 0.006, 0.006, 0.011
+report4.i, 0.007, 0.005, 0.005
+report6.i, 0.007, 0.008, 0.006
+\end{filecontents*}
+
 \begin{filecontents*}{baseline_cycles_2.csv}
-file, cycles, maxlive, registers
-block1.i, 96, 5, 50
-block2.i, 81, 12, 44
-block3.i, 47, 6, 19
-block4.i, 36, 6, 19
-block5.i, 75, 5, 49
-block6.i, 54, 4, 28
-report1.i, 65, 14, 57
-report2.i, 62, 5, 37
-report3.i, 52, 13, 27
-report4.i, 46, 5, 32
-report5.i, 50, 19, 41
-report6.i, 52, 5, 43
+file, cycles, maxlive, registers, avgmaxlive
+block1.i, 96, 5, 50, 3.3
+block2.i, 81, 12, 44, 7.9
+block3.i, 47, 6, 19, 3.3
+block4.i, 36, 6, 19, 3.4
+block5.i, 75, 5, 49, 3.9
+block6.i, 54, 4, 28, 2.9
+report1.i, 65, 14, 57, 9.5
+report2.i, 62, 5, 37, 3.6
+report3.i, 52, 13, 27, 5.3
+report4.i, 46, 5, 32, 3.8
+report5.i, 50, 19, 41, 9.0
+report6.i, 52, 5, 43, 4.1
 \end{filecontents*}
 
 \begin{document}
@@ -97,10 +110,10 @@ In this report, we explore different types of local register allocators and thei
 		
 		\begin{figure}[H]
 			\centering
-			\begin{tabular}{c|c|c|c}%
-				 \bfseries Block Name & \bfseries Number Cycles & \bfseries MAXLIVE & \bfseries Number of Registers
+			\begin{tabular}{c|c|c|c|c}%
+				 \bfseries Block Name & \bfseries Number Cycles & \bfseries MAXLIVE & \bfseries Average MAXLIVE & \bfseries Number of Registers
 				\csvreader[head to column names]{baseline_cycles_2.csv}{}% use head of csv as column names
-				{\\\hline \file & \cycles & \maxlive & \registers}
+				{\\\hline \file & \cycles & \maxlive & \avgmaxlive & \registers}
 			\end{tabular}
 			\caption{The number of cycles, registers, and MAXLIVE for each of the blocks used in testing with an unbounded number of virtual registers.}
 		\end{figure}
@@ -113,7 +126,20 @@ In this report, we explore different types of local register allocators and thei
 	
 			Observing the number of cycles required as the number of registers increase is unsurprising at first glance -- less registers are required to be spilled as $k$ increases. Since Bottom-Up allocators require no Feasible set $F$, all $k$ physical registers are able to be used throughout the allocated program. In blocks where MAXLIVE is $< k$, then, we find that the performance of the allocator is equivalent to the performance of the block without allocation, in terms of cycles. The upside of using the allocator, then, is the reduction in the number of registers: in \textit{block1}, for example, we can do with $k = 6$ registers and achieve the same number of cycles as the program written using $k = 50$ registers. 
 			
-			This is a major upside when writing a compiler, so long as we assume that the values aren't intertwined too much. If users of the language are conscious of this and use variables 
+			When $k = 5$, we experience the highest number of cycles compared to when $k = 10$ or $k = 20$, as previously discussed. The extent to which this difference occurs, though, can be dramatically altered by how often MAXLIVE $> k$. In \textit{block2}, \textit{report1}, and \textit{report5}, then, it makes sense that we see a dramatically higher number of cycles for $k = 5$ than when $k = 10$, since the number of instructions with MAXLIVE $> 5$ is larger than the number of instructions with MAXLIVE $> 10$. The number of instructions in which MAXLIVE exceeds $k$ is the biggest factor in how many extra registers need to be spilled. It makes sense, then, that in \textit{block1} we see such a small increase in the number of cycles required when $k = 5$ compared to when $k \geq 6$ -- only one instruction has a larger MAXLIVE than $5$, and so we only need to spill registers in that instruction. 
 			
+			This is a major upside when writing a compiler, so long as we assume that the values aren't intertwined too much. If users of the language are conscious of this and use variables that are not distributed throughout a block, the code produced can be very efficient even on machines with a low overall register count. This means that for Bottom-Up register allocators, it seems to be best to have many variables that are used quickly. Having variables that can be used once to perform a calculation and then used in the calculation following allows for an overall low MAXLIVE, but highly efficient register allocation scheme without much spilling, even when allowing hundreds of virtual registers.
+			
+			Another upside of the Bottom-Up allocator is that it runs linearly through the instruction block. That is, given $n$ instructions, it executes in $\Theta(n)$ time, as the allocator runs through each instruction, grabs a free register if available, or generates a spill instruction otherwise. The execution times in Figure 3, then, are all within negligibly close range to one-another. Running these tests several times yields execution times that show no significant statistical differences, since each testing block has roughly the same number of instructions.
+			
+			\begin{figure}[H]
+			\centering
+			\begin{tabular}{c|c|c|c|c}%
+				 \bfseries File & \bfseries 5 Registers & \bfseries 10 Registers & \bfseries 20 Registers
+				\csvreader[head to column names]{b_times.csv}{}% use head of csv as column names
+				{\\\hline \file & \fiveregs & \tenregs & \twentyregs}
+			\end{tabular}
+			\caption{The execution times, in seconds, of the bottom up allocator for various $k$ values.}
+		\end{figure}
 
 \end{document}
