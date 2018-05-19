@@ -178,18 +178,20 @@ int main(int argc, char** argv){
 
 	FILE* file = fopen("output", "w");
 	fprintf(file, "%s, %s, %s, %s, %s, %s\n", "Allocator", "File Name", "Number Registers", "Cycles", "Allocator Time", "Correct");
+//	fprintf(file, "%s, %s, %s, %s\n", "File Name", "Time @ 5 regs", "Time @ 10 regs", "Time @ 20 regs");
 	for(k = 0; k < NUM_TEST_FILES; k ++){
 
 			for(i = 0; i < NUM_TESTING_SYMBOLS; i ++){
-				if(testingSymbols[i] != 'b') continue;
+			//	if(testingSymbols[i] != 't') continue;
 
 	for(j = 0; j < NUM_TEST_REGS; j ++){
 				Results* results = getResults(files[k], testingSymbols[i], numTestRegisters[j]);
+
 //				printf("Testing allocator %c ON %s WITH %d registers\n", testingSymbols[i], files[k], numTestRegisters[j]);
 				fprintf(file, "%s, %s, %d, %d, %f, %d\n", allocatorTypeToText(results->allocator), results->fileName, results->numRegs, results->numCycles, results->executionTime, results->resultsCorrect);
 //				return 0;
 			}
-	
+//				fprintf(file, "%s, %f, %f, %f\n", files[k], num5, num10, num20);	
 		}
 
 	}

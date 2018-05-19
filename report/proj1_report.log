@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Arch Linux) (preloaded format=pdflatex 2017.12.7)  3 MAR 2018 23:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Arch Linux) (preloaded format=pdflatex 2017.12.7)  4 MAR 2018 21:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -581,24 +581,32 @@ LaTeX Warning: File `b_times.csv' already exists on the system.
                Not generating it from this source.
 
 
+LaTeX Warning: File `s_times.csv' already exists on the system.
+               Not generating it from this source.
+
+
+LaTeX Warning: File `t_times.csv' already exists on the system.
+               Not generating it from this source.
+
+
 LaTeX Warning: File `baseline_cycles_2.csv' already exists on the system.
                Not generating it from this source.
 
 (./proj1_report.aux)
 \openout1 = `proj1_report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 84.
-LaTeX Font Info:    ... okay on input line 84.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 84.
-LaTeX Font Info:    ... okay on input line 84.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 84.
-LaTeX Font Info:    ... okay on input line 84.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 84.
-LaTeX Font Info:    ... okay on input line 84.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 84.
-LaTeX Font Info:    ... okay on input line 84.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 84.
-LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 105.
+LaTeX Font Info:    ... okay on input line 105.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 105.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 105.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 105.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 105.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 105.
  (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count147
@@ -675,35 +683,64 @@ e
 <b_cycles.png, id=15, 810.02625pt x 500.87125pt>
 File: b_cycles.png Graphic file (type png)
 <use b_cycles.png>
-Package pdftex.def Info: b_cycles.png  used on input line 123. on input line 12
-3.
+Package pdftex.def Info: b_cycles.png  used on input line 144. on input line 14
+4.
 Package pdftex.def Info: Requested size: 348.30449pt x 215.37042pt on input lin
-e 123.
+e 144.
  [2] [3 <./b_cycles.png (PNG copy)>]
-[4]
+<s_cycles.png, id=23, 981.6675pt x 500.87125pt>
+File: s_cycles.png Graphic file (type png)
+<use s_cycles.png>
+Package pdftex.def Info: s_cycles.png  used on input line 169. on input line 16
+9.
+Package pdftex.def Info: Requested size: 422.1088pt x 215.37042pt on input line
+ 169.
+
+[4 <./s_cycles.png (PNG copy)>]
+<t_cycles.png, id=28, 984.67876pt x 372.39125pt>
+File: t_cycles.png Graphic file (type png)
+<use t_cycles.png>
+Package pdftex.def Info: t_cycles.png  used on input line 192. on input line 19
+2.
+Package pdftex.def Info: Requested size: 423.40361pt x 160.1251pt on input line
+ 192.
+ [5 <./t_cycles.png (PNG copy)>]
+<all_cycles.png, id=32, 890.32625pt x 440.64626pt>
+File: all_cycles.png Graphic file (type png)
+<use all_cycles.png>
+Package pdftex.def Info: all_cycles.png  used on input line 215. on input line 
+215.
+Package pdftex.def Info: Requested size: 445.16203pt x 220.32259pt on input lin
+e 215.
+ [6 <./all_cycles.png (PNG copy)>] [7]
+Overfull \vbox (77.51234pt too high) has occurred while \output is active []
+
+
+[8]
 This exam contains 0 questions with 0 parts, 0 subparts, and 0 subsubparts.
 (./proj1_report.aux) ) 
 Here is how much of TeX's memory you used:
- 6136 strings out of 492985
- 92883 string characters out of 6138638
- 192686 words of memory out of 5000000
- 9608 multiletter control sequences out of 15000+600000
+ 6158 strings out of 492985
+ 93265 string characters out of 6138638
+ 202686 words of memory out of 5000000
+ 9625 multiletter control sequences out of 15000+600000
  9976 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,10n,49p,935b,299s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,10n,49p,1041b,299s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmb
 x10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/
 share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texmf-dis
 t/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/
 public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><
-/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf
--dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmti10.pfb>
-Output written on proj1_report.pdf (4 pages, 151747 bytes).
+/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmti10.pfb>
+Output written on proj1_report.pdf (8 pages, 238360 bytes).
 PDF statistics:
- 58 PDF objects out of 1000 (max. 8388607)
- 40 compressed objects within 1 object stream
+ 79 PDF objects out of 1000 (max. 8388607)
+ 53 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

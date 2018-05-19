@@ -65,6 +65,27 @@ report4.i, 0.007, 0.005, 0.005
 report6.i, 0.007, 0.008, 0.006
 \end{filecontents*}
 
+\begin{filecontents*}{s_times.csv}
+file, fiveregs, tenregs, twentyregs
+report1.i, 0.006, 0.006, 0.009
+report2.i, 0.005, 0.006, 0.006
+report3.i, 0.005, 0.006, 0.005
+report5.i, 0.007, 0.006, 0.006
+report4.i, 0.006, 0.005, 0.006
+report6.i, 0.006, 0.009, 0.006
+\end{filecontents*}
+
+\begin{filecontents*}{t_times.csv}
+file, fiveregs, tenregs, twentyregs
+report1.i, 0.007, 0.006, 0.007
+report2.i, 0.008, 0.006, 0.012
+report3.i, 0.006, 0.021, 0.008
+report5.i, 0.009, 0.018, 0.007
+report4.i, 0.015, 0.023, 0.013
+report6.i, 0.009, 0.012, 0.016
+
+\end{filecontents*}
+
 \begin{filecontents*}{baseline_cycles_2.csv}
 file, cycles, maxlive, registers, avgmaxlive
 block1.i, 96, 5, 50, 3.3
@@ -132,7 +153,7 @@ In this report, we explore different types of local register allocators and thei
 			
 			Another upside of the Bottom-Up allocator is that it runs linearly through the instruction block. That is, given $n$ instructions, it executes in $\Theta(n)$ time, as the allocator runs through each instruction, grabs a free register if available, or generates a spill instruction otherwise. The execution times in Figure 3, then, are all within negligibly close range to one-another. Running these tests several times yields execution times that show no significant statistical differences, since each testing block has roughly the same number of instructions.
 			
-			\begin{figure}[H]
+		\begin{figure}[H]
 			\centering
 			\begin{tabular}{c|c|c|c|c}%
 				 \bfseries File & \bfseries 5 Registers & \bfseries 10 Registers & \bfseries 20 Registers
@@ -140,6 +161,77 @@ In this report, we explore different types of local register allocators and thei
 				{\\\hline \file & \fiveregs & \tenregs & \twentyregs}
 			\end{tabular}
 			\caption{The execution times, in seconds, of the bottom up allocator for various $k$ values.}
+		\end{figure}
+
+	\subsection{Top Down EAC}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.43]{s_cycles.png}
+			\caption{In order, the number of cycles for the EAC top-down allocator for 5, 10, and 20 registers for each of block1, block2, \dots, report 6. i.e: column 4 is 5 registers for block 2.}
+		\end{figure}
+		
+		The EAC version of the Top-Down allocator attempts to find the number of registers used least often throughout the block and use them as candidates for spillage. Unlike the Bottom-Up allocator, given $m$ registers in a block, this allocator will spill exactly $m - (k - F)$ registers, whereas the Bottom-Up allocator will spill only as needed. As such, when $k = 5$, this allocator must spill $50 - (5 - 2) = 47$ registers for \textit{block1}. Even when $k = 10$, it will need to spill $50 - 8 = 42$ registers, despite no instructions having a MAXLIVE $> 8$. 
+		
+		This allocator's largest downfall is in blocks which have registers heavily used in half of the block, but seldom used throughout, especially when many registers follow this pattern, as they all will be spilled. Register re-use could significantly make this a better algorithm, as we would not need to spill quite as many registers once they're no longer needed. That is, if a register is used to store $b = 2*a$, and then another register is used to store $b = 3*b$, we could reduce the number of registers needed by 1 by not using that second register. 
+		
+		In terms of execution times, this algorithm performed arguably the best, with the worst computation involved being a sort. Since in these test cases, the number of registers was fairly small, we utilized an insertion sort. Given $m$ registers and $n$ instructions, then, this entire algorithm ran in roughly $O(n + m^2)$. Since the number of registers is typically fairly small compared to the number of instructions in most of the blocks we tested, the entire algorithm runs in roughly $O(n)$, akin to the Bottom-Up allocator, but ran consistently faster than the other two allocators on all blocks. 
+		
+		\begin{figure}[H]
+			\centering
+			\begin{tabular}{c|c|c|c|c}%
+				 \bfseries File & \bfseries 5 Registers & \bfseries 10 Registers & \bfseries 20 Registers
+				\csvreader[head to column names]{s_times.csv}{}% use head of csv as column names
+				{\\\hline \file & \fiveregs & \tenregs & \twentyregs}
+			\end{tabular}
+			\caption{The execution times, in seconds, of the EAC Top-Down allocator for various $k$ values.}
+		\end{figure}
+
+	\subsection{Top Down Class}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.43]{t_cycles.png}
+			\caption{In order, the number of cycles for the In-Class top-down allocator for 5, 10, and 20 registers for each of block1, block2, \dots, report 6. i.e: column 4 is 5 registers for block 2.}
+		\end{figure}
+		
+		The In-Class Top-Down allocator is a major improvement over the EAC Top-Down allocator, given that it attempts to spill registers that actually are problematic in terms of the MAXLIVE with respect to $(k-F)$. Like the Bottom-Up compiler, there can be a reduction in the number of physical registers required to execute a block of instructions, without any increase in the number of cycles, so long as the MAXLIVE of every instruction is below a specific range. For this allocator, this occurs when the MAXLIVE of each instruction is $\leq (k - F)$. In \textit{block1}, for example, where the number of registers is 50, but MAXLIVE is $5$, we see nearly double the cycles required when $k = 5$ compared to the original block. When $k = 10$ (where $(10 - 2) \geq 5$) , however, the allocator is able to produce a block that takes exactly the same number of cycles as the original block, whereas the EAC Top-Down allocator required 505 cycles.
+		
+		These improvements aren't without cost. By far, this algorithm takes the longest to execute, as we must recompute the MAXLIVE of each instruction and continue through the process until all of the instructions are complete. It's difficult to bound exactly how many iterations much occur, as the number of instructions with MAXLIVE $> (k - F)$ can change depending on which register is spilled, but we can see from the run-time numbers that generally it performs significantly worse than the other allocators in wall-clock time.
+		
+		\begin{figure}[H]
+			\centering
+			\begin{tabular}{c|c|c|c|c}%
+				 \bfseries File & \bfseries 5 Registers & \bfseries 10 Registers & \bfseries 20 Registers
+				\csvreader[head to column names]{t_times.csv}{}% use head of csv as column names
+				{\\\hline \file & \fiveregs & \tenregs & \twentyregs}
+			\end{tabular}
+			\caption{The execution times, in seconds, of the In-Class Top-Down allocator for various $k$ values.}
+		\end{figure}
+		
+\section{Conclusion and Discussion}
+	These allocators each have their strengths and weaknesses. For the EAC Top-Down Allocator, its biggest strength is its ease of implementation and quick runtime. There are very few obstacles in its implementation, as computing the number of occurrences can be done while interpreting each instruction. In that sense, the most difficult part of the algorithm is the sorting of the registers by the number of occurrences. That is about the extent of the successes for this particular allocator, though, as the number of cycles required to execute its code is always greater than the number of cycles in the block, so long as $(k+F) \leq $ MAXLIVE. In situations where the number of cycles aren't as significant as a quick implementation and a quickly running allocator, this is a great first stop. Register re-use also helps, as we can reduce the total number of registers used in the program.
+	
+	\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.5]{all_cycles.png}
+			\caption{Comparing the number of cycles required for each of the allocators one each block.}
+		\end{figure}
+	
+	Between the Bottom-Up and In-Class Top-Down allocator, there are some trade-offs that need to be considered. In the implementation in our system, the In-Class Top-Down allocator was the most complex to implement, but that mostly was due to poor planning at the offset of the project. In terms of implementation difficulty with correct planning then, both algorithms seem equivalent in retrospect. When does one perform better than the other, then? Looking at the number of cycles, it seems that there was never a time in which the bottom-up allocator produced worse code than the other. The top-down allocator also took much longer to execute, and could potentially grow non-linearly as the MAXLIVE of each instruction grows, so it seems clear that the bottom-up allocator is the better choice in most cases.
+	
+	In personal testing, though, it seems that the Top-Down allocator used in class performed very well when the cause of instructions' MAXLIVE exceeding $(k - F)$ was due to several registers being used once in the beginning, not used during the duration of the program, and then used a final time at the very end of the program. In these situations, the allocator seemed to perform on-par with the Bottom-Up allocator (and in some cases even a bit better), while performing in nearly the same time complexity.
+	
+	What this essentially amounts to is understanding the typical code produced by the front-end of the compiler. If the ILOC code fed into the allocator is typically intertwined (and registers are used often) and performance of the final code matters, then it may be best to use the Bottom-Up allocator. In situations where registers are typically used once and then later on re-used towards the end of the block, and the running time of the allocator isn't as important, the In-Class Top-Down allocator seems fairly useful. When you just want to have something that runs really fast and isn't hard to implement correctly, or when register-reuse is allowed, the EAC version of the Top-Down allocator is a nice tool to have. Generally, the Bottom-Up allocator seemed to produced the best results, but these were just a few small testcases. Running these on blocks of thousands of instructions and with different characteristics throughout may shed light on different strategies that need to be utilized for the best results. 
+
+\pagebreak
+
+\begin{figure}[H]
+			\centering
+			\begin{tabular}{c|c|c|c|c}%
+				 \bfseries Allocator & \bfseries File Name & \bfseries Number of Registers & \bfseries Cycles & \bfseries Execution Time
+				\csvreader[head to column names]{all_cycles.csv}{}% use head of csv as column names
+				{\\\hline \allocator & \file & \registers & \cycles & \time}
+			\end{tabular}
+			\caption{Full number of cycles and execution time for all allocators and report blocks for 5, 10, and 20 registers.}
 		\end{figure}
 
 \end{document}

@@ -1,0 +1,13 @@
+File Name, Time @ 5 regs, Time @ 10 regs, Time @ 20 regs
+blocks/block1.i, 0.005000, 0.005000, 0.005000
+blocks/block2.i, 0.005000, 0.005000, 0.004000
+blocks/block3.i, 0.004000, 0.004000, 0.004000
+blocks/block4.i, 0.004000, 0.004000, 0.004000
+blocks/block5.i, 0.005000, 0.005000, 0.005000
+blocks/block6.i, 0.004000, 0.005000, 0.005000
+blocks/report1.i, 0.005000, 0.007000, 0.005000
+blocks/report2.i, 0.005000, 0.005000, 0.006000
+blocks/report3.i, 0.005000, 0.004000, 0.005000
+blocks/report5.i, 0.005000, 0.009000, 0.005000
+blocks/report4.i, 0.004000, 0.005000, 0.005000
+blocks/report6.i, 0.005000, 0.005000, 0.006000
